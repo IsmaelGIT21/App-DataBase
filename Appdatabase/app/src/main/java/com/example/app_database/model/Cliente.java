@@ -112,4 +112,16 @@ public class Cliente {
     public void setNumero(String numero) {
         this.numero = numero;
     }
+    public long getCidadeIbge() {
+        return cidadeIbge;
+    }
+
+    public void setCidadeIbge(long cidadeIbge) {
+        this.cidadeIbge = cidadeIbge;
+    }
+    @Override
+    public String toString() {
+        // Escolha o que quer exibir (ex: Nome Fantasia ou Razão Social + CNPJ)
+        return this.razaoSocial + " (CNPJ: " + this.cnpj + ")";
+    }
 }
