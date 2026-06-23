@@ -12,12 +12,17 @@ import java.util.List;
 
 @Dao
 public interface CidadeDAO {
+
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     void insert(Cidade cidade);
+
     @Delete
     void delete(Cidade cidade);
+
     @Query("SELECT * FROM Cidade ORDER BY nome ASC")
     List<Cidade> listarTodos();
-    @Query("SELECT * FROM Cidade WHERE ibge = :ibgeid LIMIT 1")
+
+    // CORRIGIDO: Agora o ":ibge" casa perfeitamente com o parâmetro "long ibge"
+    @Query("SELECT * FROM Cidade WHERE ibge = :ibge LIMIT 1")
     Cidade buscaPorID(long ibge);
 }

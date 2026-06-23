@@ -121,7 +121,6 @@ public class Cliente {
     }
     @Override
     public String toString() {
-        // Escolha o que quer exibir (ex: Nome Fantasia ou Razão Social + CNPJ)
-        return this.razaoSocial + " (CNPJ: " + this.cnpj + ")";
+        return this.razaoSocial;
     }
 }

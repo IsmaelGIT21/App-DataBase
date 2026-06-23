@@ -15,6 +15,11 @@ import com.example.app_database.model.Cidade;
 import com.example.app_database.model.Cliente;
 import com.example.app_database.viewmodel.MainViewModel;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
+
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -22,10 +27,10 @@ import retrofit2.Response;
 public class CadastroActivity extends AppCompatActivity {
 
     private EditText editCnpj, editRazaoSocial, editCep, editLogradouro, editBairro, editNumero;
+    private EditText editNomeFantasia, editContato, editTelefone, editEmail, editUltimaVisita;
     private Button btnBuscarCep, btnSalvar;
     private MainViewModel viewModel;
 
-    // Variáveis para guardar temporariamente os dados da Cidade recebidos da API
     private long codigoIbgeSalvo = 0;
     private String nomeCidadeSalva = "";
 
@@ -34,22 +39,23 @@ public class CadastroActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_cadastro);
 
-        // Vincular componentes
         editCnpj = findViewById(R.id.editCnpj);
         editRazaoSocial = findViewById(R.id.editRazaoSocial);
         editCep = findViewById(R.id.editCep);
         editLogradouro = findViewById(R.id.editLogradouro);
         editBairro = findViewById(R.id.editBairro);
         editNumero = findViewById(R.id.editNumero);
+        editNomeFantasia = findViewById(R.id.editNomeFantasia);
+        editContato = findViewById(R.id.editContato);
+        editTelefone = findViewById(R.id.editTelefone);
+        editEmail = findViewById(R.id.editEmail);
+        editUltimaVisita = findViewById(R.id.editUltimaVisita);
         btnBuscarCep = findViewById(R.id.btnBuscarCep);
         btnSalvar = findViewById(R.id.btnSalvar);
 
         viewModel = new ViewModelProvider(this).get(MainViewModel.class);
 
-        // Evento de clique para Buscar o CEP via Retrofit
         btnBuscarCep.setOnClickListener(v -> buscarCepNoRetrofit());
-
-        // Evento de clique para Salvar o cliente e a cidade no Banco de Dados
         btnSalvar.setOnClickListener(v -> salvarClienteNoBanco());
     }
 
@@ -60,10 +66,7 @@ public class CadastroActivity extends AppCompatActivity {
             return;
         }
 
-        // Chama direto o getViaCepService() criado no seu RetrofitClient
         ViaCepService service = RetrofitClient.getViaCepService();
-
-        // Usa o método correto buscaCEP da sua Interface
         Call<EnderecoResponse> call = service.buscaCEP(cep);
 
         call.enqueue(new Callback<EnderecoResponse>() {
@@ -75,10 +78,8 @@ public class CadastroActivity extends AppCompatActivity {
                     editLogradouro.setText(endereco.getLogradouro());
                     editBairro.setText(endereco.getBairro());
 
-                    // Guarda o nome real da cidade retornado pela API
                     nomeCidadeSalva = endereco.getCidade();
 
-                    // Usa getCodigoibge() mapeado no seu EnderecoResponse
                     try {
                         codigoIbgeSalvo = Long.parseLong(endereco.getCodigoibge());
                     } catch (NumberFormatException e) {
@@ -104,12 +105,10 @@ public class CadastroActivity extends AppCompatActivity {
             return;
         }
 
-        // 1. Criar o objeto Cidade com os dados reais salvos da busca do CEP
         Cidade cidade = new Cidade();
         cidade.setIbge(codigoIbgeSalvo);
-        cidade.setNome(nomeCidadeSalva); // Agora sim! Nome real dinâmico salvo com sucesso
+        cidade.setNome(nomeCidadeSalva);
 
-        // 2. Criar e preencher o objeto Cliente
         Cliente cliente = new Cliente();
         cliente.setCnpj(editCnpj.getText().toString().trim());
         cliente.setRazaoSocial(editRazaoSocial.getText().toString().trim());
@@ -117,12 +116,28 @@ public class CadastroActivity extends AppCompatActivity {
         cliente.setLogradouro(editLogradouro.getText().toString().trim());
         cliente.setBairro(editBairro.getText().toString().trim());
         cliente.setNumero(editNumero.getText().toString().trim());
-        cliente.setCidadeIbge(codigoIbgeSalvo); // Salvando a FK!
+        cliente.setCidadeIbge(codigoIbgeSalvo);
 
-        // 3. Salvar usando nosso ViewModel
+        cliente.setNomeFantasia(editNomeFantasia.getText().toString().trim());
+        cliente.setContato(editContato.getText().toString().trim());
+        cliente.setTelefone(editTelefone.getText().toString().trim());
+        cliente.setEmail(editEmail.getText().toString().trim());
+
+        String dataString = editUltimaVisita.getText().toString().trim();
+        if (!dataString.isEmpty()) {
+            SimpleDateFormat format = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
+            try {
+                Date dataFormatada = format.parse(dataString);
+                cliente.setUltimaVisita(dataFormatada);
+            } catch (ParseException e) {
+                Toast.makeText(this, "Formato de data inválido (use dd/MM/yyyy)", Toast.LENGTH_SHORT).show();
+                return;
+            }
+        }
+
         viewModel.cadastrarCliente(cliente, cidade);
 
         Toast.makeText(this, "Cliente cadastrado com sucesso!", Toast.LENGTH_SHORT).show();
-        finish(); // Fecha a tela e volta para a MainActivity
+        finish();
     }
 }

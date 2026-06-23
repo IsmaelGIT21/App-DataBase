@@ -20,7 +20,7 @@ public abstract class AppDatabase extends RoomDatabase {
     private static volatile AppDatabase INSTANCE;
 
     public abstract ClienteDAO clienteDAO();
-    public abstract CidadeDAO   cidadeDAO() ;
+    public abstract CidadeDAO   cidadeDAO();
     public abstract VisitaDAO   visitaDAO();
 
     public static AppDatabase getDatabase(final Context context){
@@ -28,7 +28,8 @@ public abstract class AppDatabase extends RoomDatabase {
             synchronized (AppDatabase.class){
                 if(INSTANCE == null){
                     INSTANCE = Room.databaseBuilder(context.getApplicationContext(),
-                            AppDatabase.class, "Projeto_visita_db")
+                                    AppDatabase.class, "Projeto_visita_db")
+                            .allowMainThreadQueries() // CORREÇÃO: Permite ler/escrever na Main Thread sem crashar
                             .fallbackToDestructiveMigration()
                             .build();
                 }

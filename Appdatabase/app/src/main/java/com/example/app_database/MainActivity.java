@@ -1,13 +1,17 @@
 package com.example.app_database;
 
+import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.ListView; // Trocado de RecyclerView para ListView
+import android.widget.ListView;
 import android.widget.Spinner;
+import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -27,7 +31,8 @@ public class MainActivity extends AppCompatActivity {
     private MainViewModel viewModel;
     private Spinner spinnerCidades;
     private Button btnNovoCliente;
-    private ListView listViewClientes; // Simplificado aqui!
+    private ListView listViewClientes;
+    private ArrayAdapter<Cidade> spinnerAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,30 +48,51 @@ public class MainActivity extends AppCompatActivity {
 
         spinnerCidades = findViewById(R.id.spinnerCidades);
         btnNovoCliente = findViewById(R.id.btnNovoCliente);
-        listViewClientes = findViewById(R.id.listViewClientes); // Seu ListView simples
+        listViewClientes = findViewById(R.id.listViewClientes);
 
         viewModel = new ViewModelProvider(this).get(MainViewModel.class);
 
         configurarSpinner();
 
         btnNovoCliente.setOnClickListener(v -> {
-            // Intent para a tela de cadastro futuramente
+            Intent intent = new Intent(MainActivity.this, CadastroActivity.class);
+            startActivity(intent);
         });
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (spinnerAdapter != null && viewModel != null) {
+            List<Cidade> listaCidadesAtualizada = viewModel.obterTodasCidades();
+            spinnerAdapter.clear();
+            spinnerAdapter.addAll(listaCidadesAtualizada);
+            spinnerAdapter.notifyDataSetChanged();
+
+            if (!listaCidadesAtualizada.isEmpty()) {
+                Cidade selecionada = (Cidade) spinnerCidades.getSelectedItem();
+                if (selecionada != null) {
+                    atualizarListaClientes(selecionada.getIbge());
+                }
+            }
+        }
     }
 
     private void configurarSpinner() {
         List<Cidade> listaCidades = viewModel.obterTodasCidades();
 
-        ArrayAdapter<Cidade> adapter = new ArrayAdapter<>(this,
+        spinnerAdapter = new ArrayAdapter<>(this,
                 android.R.layout.simple_spinner_item, listaCidades);
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spinnerCidades.setAdapter(adapter);
+        spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinnerCidades.setAdapter(spinnerAdapter);
 
         spinnerCidades.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 Cidade cidadeSelecionada = (Cidade) parent.getItemAtPosition(position);
-                atualizarListaClientes(cidadeSelecionada.getIbge());
+                if (cidadeSelecionada != null) {
+                    atualizarListaClientes(cidadeSelecionada.getIbge());
+                }
             }
 
             @Override
@@ -75,12 +101,46 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void atualizarListaClientes(long ibge) {
-        // CORRIGIDO: Removido o "n" do obter
+        // Usa o método do seu ViewModel/Repository
         List<Cliente> clientes = viewModel.obterClientesPorCidade(ibge);
 
-        ArrayAdapter<Cliente> adapterClientes = new ArrayAdapter<>(this,
-                android.R.layout.simple_list_item_1, clientes);
-
+        // Instancia o nosso adapter customizado com a lógica de cores
+        ClienteAdapter adapterClientes = new ClienteAdapter(this, clientes);
         listViewClientes.setAdapter(adapterClientes);
+    }
+
+    // CLASSE INTERNA: Controla a cor de fundo com base na regra de 7 dias
+    private class ClienteAdapter extends ArrayAdapter<Cliente> {
+        public ClienteAdapter(Context context, List<Cliente> clientes) {
+            super(context, android.R.layout.simple_list_item_1, clientes);
+        }
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+            View view = super.getView(position, convertView, parent);
+            Cliente cliente = getItem(position);
+
+            if (cliente != null && cliente.getUltimaVisita() != null) {
+                long dataVisitaMs = cliente.getUltimaVisita().getTime();
+                long seteDiasEmMs = 7L * 24 * 60 * 60 * 1000;
+                long agora = System.currentTimeMillis();
+
+                // Se a diferença for menor ou igual a 7 dias, pinta de verde claro
+                if (agora - dataVisitaMs <= seteDiasEmMs) {
+                    view.setBackgroundColor(Color.parseColor("#C8E6C9"));
+                } else {
+                    view.setBackgroundColor(Color.TRANSPARENT);
+                }
+            } else {
+                view.setBackgroundColor(Color.TRANSPARENT);
+            }
+
+            TextView textView = view.findViewById(android.R.id.text1);
+            if (cliente != null) {
+                textView.setText(cliente.getRazaoSocial());
+            }
+
+            return view;
+        }
     }
 }

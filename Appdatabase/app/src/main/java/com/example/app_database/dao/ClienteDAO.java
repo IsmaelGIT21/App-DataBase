@@ -14,11 +14,14 @@ import java.util.List;
 public interface ClienteDAO {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     void insert(Cliente cliente);
+
     @Delete
     void delete(Cliente cliente);
-    @Query("SELECT * FROM Cliente WHERE cidadeIbge = :ibgeCidade ORDER BY ultimaVisita ASC")
-    List<Cliente> listarClientesPorCidade(long ibgeCidade);
+
+    // CORREÇÃO: Trocado dataUltimaVisita por ultimaVisita
+    @Query("SELECT * FROM Cliente WHERE cidadeIbge = :ibge ORDER BY ultimaVisita ASC")
+    List<Cliente> obterClientesPorCidade(long ibge);
+
     @Query("SELECT * FROM Cliente WHERE cnpj = :cnpj LIMIT 1")
     Cliente buscarPorCnpj(String cnpj);
-
 }

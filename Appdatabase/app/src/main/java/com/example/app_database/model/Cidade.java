@@ -35,4 +35,10 @@ public class Cidade {
     public void setDdd(int ddd) {
         this.ddd = ddd;
     }
+
+    @Override
+    public String toString() {
+        return this.nome;
+    }
+
 }
