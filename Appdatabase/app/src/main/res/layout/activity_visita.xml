@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <TextView
+        android:id="@+id/txtNomeClienteVisita"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="24dp"
+        android:text="Registrar Visita" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Classificação da Satisfação (1 a 5 estrelas):"
+        android:layout_marginBottom="8dp" />
+
+    <RatingBar
+        android:id="@+id/ratingSatisfacao"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:numStars="5"
+        android:stepSize="1.0"
+        android:layout_marginBottom="16dp" />
+
+    <EditText
+        android:id="@+id/editValorPedido"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Valor do Pedido (0.00 se não houve pedido)"
+        android:inputType="numberDecimal"
+        android:layout_marginBottom="16dp" />
+
+    <EditText
+        android:id="@+id/editObservacao"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Observações ou acordos futuros para o cliente"
+        android:inputType="textMultiLine"
+        android:lines="4"
+        android:gravity="top"
+        android:layout_marginBottom="24dp" />
+
+    <Button
+        android:id="@+id/btnSalvarVisita"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Salvar Visita" />
+
+</LinearLayout>
