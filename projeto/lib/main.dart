@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 
 void main() {
@@ -28,7 +30,7 @@ class MyApp extends StatelessWidget {
         //
         // This works for code too, not just values: Most code changes can be
         // tested with just a hot reload.
-        colorScheme: .fromSeed(seedColor: Colors.deepPurple),
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
       home: const MyHomePage(title: 'Flutter Demo Home Page'),
     );
@@ -59,6 +61,7 @@ class _MyHomePageState extends State<MyHomePage> {
   final TextEditingController minimoController = TextEditingController();
   final TextEditingController maximoController = TextEditingController();
   final TextEditingController numeroPorApostaController = TextEditingController();
+  List<List<int>> apostas = [];
 
   void _incrementCounter() {
     setState(() {
@@ -75,7 +78,7 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       body: Center(
         child: Column(
-          mainAxisAlignment: .center,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const Text(
                 'Apostas',
@@ -111,7 +114,45 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
               controller: numeroPorApostaController,
               keyboardType: TextInputType.number,
-            )
+            ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                int quantidade = int.tryParse(quantidadeController.text) ?? 0;
+                int minimo = int.tryParse(minimoController.text) ?? 0;
+                int maximo = int.tryParse(maximoController.text) ?? 0;
+                int numeroPorAposta = int.tryParse(numeroPorApostaController.text) ?? 0;
+                if (quantidade > 0 && quantidade <= 30 && minimo < maximo && numeroPorAposta > 0 && numeroPorAposta <= 10) {
+                  List<List<int>> novasApostas = [];
+                  Random random = Random();
+
+                  for (int i = 0; i < quantidade; i++) {
+                    Set<int> aposta = {};
+                    while (aposta.length < numeroPorAposta) {
+                      aposta.add(minimo + random.nextInt(maximo - minimo + 1));
+                    }
+                    novasApostas.add(aposta.toList());
+                  }
+
+                  setState(() {
+                    apostas = novasApostas;
+                  });
+                }
+              },
+              child: Text('Gerar Apostas'),
+            ),
+            SizedBox(height: 20),
+            Expanded(
+              child: ListView.builder(
+                itemCount: apostas.length,
+                itemBuilder: (context, index) {
+                  return ListTile(
+                    title: Text('Aposta ${index + 1}'),
+                    subtitle: Text(apostas[index].join(', ')),
+                  );
+                },
+              ),
+            ),
           ],
         ),
       ),
